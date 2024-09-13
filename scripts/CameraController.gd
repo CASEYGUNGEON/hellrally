@@ -2,7 +2,7 @@ extends Camera3D
 
 @export var custom_offset := Vector3(-15.0, 8.0, 0.0)
 @export var follow_distance = 20
-@export var rotation_speed = 0.15
+@export var rotation_speed = 0.1
 @export var car_object: RigidBody3D
 
 

@@ -15,8 +15,9 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
-	var target_position = car_object.global_position + (Vector3(0.0, -0.5, 0.0) + car_object.transform.basis.x) * -follow_distance
-	target_position.y = car_object.global_position.y + 8
+	var car_position = car_object.global_position
+	var target_position = car_position + (Vector3(0.0, -0.5, 0.0) + car_object.transform.basis.x) * -follow_distance
+	target_position.y = car_position.y + 8
 	global_position = lerp(global_position, target_position, rotation_speed)
-	look_at(car_object.global_position)
+	look_at(car_position)
 	pass

@@ -1,6 +1,5 @@
 extends RigidBody3D
 
-var tire_facing = 0.0
 var accel_input = 0.0
 var turn_input = 0.0
 var frame_gravity = 0.0
@@ -9,10 +8,13 @@ var brake_input = false
 var handbrake_input = false
 @export var max_accel = 75.0
 @export var max_speed = 20.0
-@export var turn_coefficient = 0.35
+@export var turn_coefficient = 1.6
 @export var friction = 0.01
-@export var skid_friction_mult = 0.5
-@export var brake_friction_mult = 10
+@export var min_skid_speed = 2.5
+@export var skid_accel_mult = 0.35
+@export var skid_turn_mult = 1.25
+@export var skid_friction_mult = 0.35
+@export var brake_friction_mult = 2.5
 @export var angular_friction = 0.015
 @export var gravity = -30
 @export var ground_distance = 0.3
@@ -39,7 +41,7 @@ func _physics_process(delta):
 		accel_input = 0.2
 	turn_input = (int(Input.is_action_pressed("Left")) + int(Input.is_action_pressed("Right")) * -1) * turn_coefficient * delta
 	brake_input = int(Input.is_action_pressed("Brake")) * brake_friction_mult * delta
-	handbrake_input = int(Input.is_action_pressed(("Handbrake")))
+	handbrake_input = int(Input.is_action_pressed(("Handbrake"))) * delta
 	
 	# Get distance from ground below
 	var space_state = get_world_3d().direct_space_state
@@ -63,13 +65,18 @@ func _integrate_forces(state):
 	# Apply car physics only if we're grounded.
 	if on_ground:
 		# Calculate forces based on inputs
-		var forward_force = accel_input * 0.5 / (handbrake_input + 1)
-		tire_facing = clamp(tire_facing * 0.8 + turn_input, -0.05, 0.05)
-		state.transform.basis = state.transform.basis.rotated(Vector3.UP,tire_facing)
-		var temp_friction = friction * (1 + brake_input)
+		var forward_force = accel_input * 0.5
+		var frame_turn = turn_input
+		frame_turn = clamp(frame_turn, -0.05, 0.05)
 		# Skid if we're moving quickly enough and we're either not moving where we're pointed or we're handbraking.
 		var move_angle_vs_facing = rad_to_deg(abs(state.linear_velocity.normalized().signed_angle_to(state.transform.basis.x, Vector3.UP)))
-		if handbrake_input || (move_angle_vs_facing > 40 && accel_input > 0) || (move_angle_vs_facing < 140 && accel_input < 0):
+		var isSkidding = handbrake_input > 0 || ((state.linear_velocity.length() > min_skid_speed) && (move_angle_vs_facing > 40 && accel_input > 0) || (move_angle_vs_facing < 140 && accel_input < 0))
+		var temp_friction = friction
+		if isSkidding:
+			temp_friction *= skid_friction_mult
+			forward_force *= skid_accel_mult
+			frame_turn *= skid_turn_mult
+			#play skidding audio
 			peelout_audio_node.volume_db = 1 / (state.linear_velocity.length() / max_speed) * -5 - 35
 			if peelout_audio_node.stream == idle_sound:
 				peelout_audio_node.stop()
@@ -81,6 +88,8 @@ func _integrate_forces(state):
 					peelout_audio_node.stream = peelout_sound2
 				peelout_audio_node.play()
 		else:
+			if brake_input > 0:
+				temp_friction *= brake_friction_mult
 			if !peelout_audio_node.playing:
 				if skid_audio_state > 0:
 					skid_audio_state = 0
@@ -88,6 +97,7 @@ func _integrate_forces(state):
 					peelout_audio_node.stream = peelout_sound3
 					peelout_audio_node.play()
 		# Apply forces to the car.
+		state.transform.basis = state.transform.basis.rotated(Vector3.UP,frame_turn)
 		state.linear_velocity.x = lerp(state.linear_velocity.x, 0.0, temp_friction)
 		state.linear_velocity.z = lerp(state.linear_velocity.z, 0.0, temp_friction)
 		state.linear_velocity += state.transform.basis.x * forward_force

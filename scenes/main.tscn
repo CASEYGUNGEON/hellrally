@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://cegjfe7nemmv8"]
+[gd_scene load_steps=15 format=3 uid="uid://cegjfe7nemmv8"]
 
 [ext_resource type="Script" path="res://addons/zylann.hterrain/hterrain.gd" id="1_s6j6v"]
 [ext_resource type="Resource" path="res://terrain/data.hterrain" id="2_8rb26"]
@@ -6,10 +6,10 @@
 [ext_resource type="Texture2D" uid="uid://dkrbbiupmuia1" path="res://textures/9cc52a4e9ea7e750b8f103d3deedc5f6.jpg" id="4_rfax8"]
 [ext_resource type="Texture2D" uid="uid://dmj4gdf2a7qdf" path="res://textures/360_F_295325870_p2zO53PLWLqjuU4gbSm8usViHGB25Lyl.jpg" id="5_l7s65"]
 [ext_resource type="Script" path="res://scripts/RallyCarControl.gd" id="6_7wm04"]
-[ext_resource type="ArrayMesh" uid="uid://bah2gsjupayc2" path="res://models/testcar.obj" id="6_rlllv"]
-[ext_resource type="Texture2D" uid="uid://bfofo6so4u6qy" path="res://textures/blacktexture.png" id="7_nv75o"]
+[ext_resource type="Material" uid="uid://bub0o3pi8cofj" path="res://materials/carmaterial.tres" id="7_b7ia6"]
 [ext_resource type="AudioStream" uid="uid://c1ser2655322c" path="res://audio/idle.wav" id="8_bkxnn"]
 [ext_resource type="Script" path="res://scripts/CameraController.gd" id="8_comyh"]
+[ext_resource type="ArrayMesh" uid="uid://6c4ypkugrsdb" path="res://models/untitled.obj" id="8_qolgx"]
 
 [sub_resource type="Resource" id="Resource_gea5d"]
 script = ExtResource("3_r5ul4")
@@ -19,9 +19,6 @@ textures = [[ExtResource("4_rfax8"), ExtResource("5_l7s65")], [null, null]]
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_fk68m"]
 friction = 0.0
 bounce = 0.16
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_33n52"]
-albedo_texture = ExtResource("7_nv75o")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_8ogow"]
 size = Vector3(6.81451, 4.45473, 4.50372)
@@ -60,14 +57,13 @@ linear_velocity = Vector3(10, 0, 0)
 script = ExtResource("6_7wm04")
 max_accel = 120.0
 max_speed = 60.0
-turn_coefficient = 0.4
 friction = 0.02
 angular_friction = 0.04
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="CarObject"]
 transform = Transform3D(-2, 0, -3.01992e-07, 0, 2, 0, 3.01992e-07, 0, -2, 0, 0, 0)
-material_override = SubResource("StandardMaterial3D_33n52")
-mesh = ExtResource("6_rlllv")
+material_override = ExtResource("7_b7ia6")
+mesh = ExtResource("8_qolgx")
 skeleton = NodePath("")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CarObject"]
@@ -83,34 +79,9 @@ stream = ExtResource("8_bkxnn")
 volume_db = -15.0
 autoplay = true
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 23.6886, 211.615)
-light_energy = 4.778
-light_indirect_energy = 0.0
-light_negative = true
-sky_mode = 1
-
 [node name="Camera3D" type="Camera3D" parent="." node_paths=PackedStringArray("car_object")]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -10, 8, 211.615)
 current = true
 script = ExtResource("8_comyh")
 custom_offset = Vector3(0, 0, 0)
 car_object = NodePath("../CarObject")
-
-[node name="DirectionalLight3D2" type="DirectionalLight3D" parent="Camera3D"]
-transform = Transform3D(1, -8.38299e-09, -1.52297e-08, 1.70373e-08, 0.298375, 0.954449, -3.45698e-09, -0.954449, 0.298375, 0, 0, 0)
-light_color = Color(1, 0, 0, 1)
-light_energy = 5.0
-light_indirect_energy = 0.0
-light_volumetric_fog_energy = 0.0
-shadow_enabled = true
-sky_mode = 1
-
-[node name="DirectionalLight3D3" type="DirectionalLight3D" parent="Camera3D"]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
-light_color = Color(1, 0, 0, 1)
-light_energy = 16.0
-light_indirect_energy = 0.0
-light_volumetric_fog_energy = 0.0
-shadow_enabled = true
-sky_mode = 1
